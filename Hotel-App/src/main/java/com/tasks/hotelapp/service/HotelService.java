@@ -2,6 +2,7 @@ package com.tasks.hotelapp.service;
 
 import com.tasks.hotelapp.dao.HotelsRepository;
 import com.tasks.hotelapp.model.dto.HotelDto;
+import com.tasks.hotelapp.model.entity.Hotel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,5 +25,8 @@ public class HotelService {
                         hotel.getContacts().getPhone()
                 ))
                 .collect(Collectors.toList());
+    }
+    public Hotel getHotelById(Long id){
+        return hotelsRepository.findById(id).orElseThrow(()->new RuntimeException("Hotel with id not found!"));
     }
 }
