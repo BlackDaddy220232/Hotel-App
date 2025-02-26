@@ -6,8 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Join;
 
 import java.util.List;
-import java.util.Set;
-
+//Specification for JPA filtering
 public class HotelSpecification {
 
     public static Specification<Hotel> byName(String name) {
