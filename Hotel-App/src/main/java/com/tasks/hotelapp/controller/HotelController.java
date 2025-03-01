@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.awt.print.Pageable;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -36,6 +37,16 @@ public class HotelController {
     @PostMapping("/hotels")
     public HotelDto createHotel(@RequestBody HotelCreateDto hotel){
         return hotelService.createHotel(hotel);
+    }
+    @PostMapping("/hotels/{id}/amenities")
+    public void createAmenities(
+            @PathVariable Long id,
+            @RequestBody List<String> amenities){
+        hotelService.addAmenities(id,amenities);
+    }
+    @GetMapping("/histogram/{param}")
+    public Map<String, Integer> getHotelHistogram(@PathVariable() String param){
+        return hotelService.getHistogram(param);
     }
 
 }

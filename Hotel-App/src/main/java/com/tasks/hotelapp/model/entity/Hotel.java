@@ -42,4 +42,12 @@ public class Hotel {
     @CollectionTable(name = "hotel_amenities", joinColumns = @JoinColumn(name = "hotel_id"))
     @Column(name = "amenity")
     private List<String> amenities;
+
+    public boolean addToAmenities(List<String> amenitiesToAdd){
+        if(amenities.containsAll(amenitiesToAdd)){
+            return false;
+        }
+        amenities.addAll(amenitiesToAdd);
+        return true;
+    }
 }
