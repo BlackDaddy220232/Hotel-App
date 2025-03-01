@@ -1,12 +1,14 @@
 package com.tasks.hotelapp.specification;
 
 import com.tasks.hotelapp.model.entity.Hotel;
+import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Join;
 
 import java.util.List;
 //Specification for JPA filtering
+@NoArgsConstructor
 public class HotelSpecification {
 
     public static Specification<Hotel> byName(String name) {

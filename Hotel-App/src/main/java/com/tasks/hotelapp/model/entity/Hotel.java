@@ -4,9 +4,7 @@ import com.tasks.hotelapp.model.Address;
 import com.tasks.hotelapp.model.ArrivalTime;
 import com.tasks.hotelapp.model.Contacts;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -15,6 +13,8 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Hotel {
 
     @Id
@@ -36,6 +36,7 @@ public class Hotel {
 
     @Embedded
     private ArrivalTime arrivalTime;
+
 
     @ElementCollection
     @CollectionTable(name = "hotel_amenities", joinColumns = @JoinColumn(name = "hotel_id"))

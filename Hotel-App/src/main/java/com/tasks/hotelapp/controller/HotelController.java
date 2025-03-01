@@ -1,5 +1,6 @@
 package com.tasks.hotelapp.controller;
 
+import com.tasks.hotelapp.model.dto.HotelCreateDto;
 import com.tasks.hotelapp.model.dto.HotelDto;
 import com.tasks.hotelapp.model.entity.Hotel;
 import com.tasks.hotelapp.service.HotelService;
@@ -32,4 +33,9 @@ public class HotelController {
                                       @RequestParam(required = false) List<String> amenities){
         return hotelService.getFilteredHotels(name,brand,country,city,amenities);
     }
+    @PostMapping("/hotels")
+    public HotelDto createHotel(@RequestBody HotelCreateDto hotel){
+        return hotelService.createHotel(hotel);
+    }
+
 }
