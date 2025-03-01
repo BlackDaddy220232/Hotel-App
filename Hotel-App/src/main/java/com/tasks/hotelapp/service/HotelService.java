@@ -25,17 +25,23 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class HotelService {
-    private static final String HOTEL_EXISTS = "Hotel with his name and address already exists";
+    private static final String HOTEL_EXISTS = "Hotel with this name and address already exists";
     private static final String NOT_VALID_DATA = "Incorrect fields!";
-    private static final String HOTEL_NOT_FOUND= "Hotel not found!";
-    private HotelsRepository hotelsRepository;
+    private static final String HOTEL_NOT_FOUND = "Hotel not found!";
+    private static final String WRONG_PARAMETER= "Wrong parameter";
+
+    private final HotelsRepository hotelsRepository;
+
     public List<HotelDto> getAllHotels() {
         return convertToHotelDto(hotelsRepository.findAll());
     }
-    public Hotel getHotelById(Long id){
-        return hotelsRepository.findById(id).orElseThrow(()->new HotelNotFoundException(HOTEL_NOT_FOUND));
+
+    public Hotel getHotelById(Long id) {
+        return hotelsRepository.findById(id)
+                .orElseThrow(() -> new HotelNotFoundException(HOTEL_NOT_FOUND));
     }
-    public List<HotelDto> getFilteredHotels(String name, String brand,String country, String city, List<String> amenities) {
+
+    public List<HotelDto> getFilteredHotels(String name, String brand, String country, String city, List<String> amenities) {
         Specification<Hotel> spec = Specification
                 .where(HotelSpecification.byName(name))
                 .and(HotelSpecification.byBrand(brand))
@@ -43,34 +49,27 @@ public class HotelService {
                 .and(HotelSpecification.byCountry(country))
                 .and(HotelSpecification.byAmenities(amenities));
 
-         return convertToHotelDto(hotelsRepository.findAll(spec));
+        return convertToHotelDto(hotelsRepository.findAll(spec));
     }
-    public HotelDto createHotel(HotelCreateDto hotelCreateDto){
-        if(hotelsRepository.existsHotelByAddressAndName(hotelCreateDto.getAddress(),hotelCreateDto.getName())){
-            throw new HotelAlreadyExistsException(HOTEL_EXISTS);
-        }
-        if(!validationHotelDTO(hotelCreateDto)){
-            throw new NotValidDataException(NOT_VALID_DATA);
-        }
-        Hotel hotel = Hotel.builder().name(hotelCreateDto.getName())
-                .address(hotelCreateDto.getAddress())
-                .contacts(hotelCreateDto.getContacts())
-                .arrivalTime(hotelCreateDto.getArrivalTime())
-                .brand(hotelCreateDto.getBrand())
-                .description(hotelCreateDto.getDescription()).build();
+
+    public HotelDto createHotel(HotelCreateDto hotelCreateDto) {
+        validateHotelCreation(hotelCreateDto);
+        Hotel hotel = mapToHotelEntity(hotelCreateDto);
         hotelsRepository.save(hotel);
         return convertToHotelDto(hotel);
     }
-    public void addAmenities(Long id, List<String> amenities){
-        Hotel hotel = hotelsRepository.findById(id).orElseThrow(()-> new HotelNotFoundException(HOTEL_NOT_FOUND));
-        if(hotel.addToAmenities(amenities)){
+
+    public void addAmenities(Long id, List<String> amenities) {
+        Hotel hotel = getHotelById(id);
+        if (hotel.addToAmenities(amenities)) {
             hotelsRepository.save(hotel);
-        }else{
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"This amenities is also added");
+        } else {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "These amenities are already added");
         }
     }
+
     public Map<String, Integer> getHistogram(String param) {
-        List<Hotel> hotels = hotelsRepository.findAll(); // Получение списка всех отелей
+        List<Hotel> hotels = hotelsRepository.findAll();
         Map<String, Integer> histogram = new HashMap<>();
 
         for (Hotel hotel : hotels) {
@@ -80,23 +79,25 @@ public class HotelService {
         return histogram;
     }
 
-    private List<HotelDto> convertToHotelDto(List<Hotel> hotels){
-        return hotels.stream().map(hotel -> new HotelDto(
-                hotel.getId(),
-                hotel.getName(),
-                hotel.getDescription(),
-                (hotel.getAddress().getHouseNumber() +hotel.getAddress().getStreet()+", "
-                        +hotel.getAddress().getCity()+ ", "+ hotel.getAddress().getPostCode()+", "+ hotel.getAddress().getCountry()),
-                hotel.getContacts().getPhone()
-        )).collect(Collectors.toList());
+    private List<HotelDto> convertToHotelDto(List<Hotel> hotels) {
+        return hotels.stream()
+                .map(this::convertToHotelDto)
+                .collect(Collectors.toList());
     }
-    private HotelDto convertToHotelDto(Hotel hotel){
+
+    private HotelDto convertToHotelDto(Hotel hotel) {
+        String address = String.format("%d %s, %s, %s, %s",
+                hotel.getAddress().getHouseNumber(),
+                hotel.getAddress().getStreet(),
+                hotel.getAddress().getCity(),
+                hotel.getAddress().getPostCode(),
+                hotel.getAddress().getCountry());
+
         return new HotelDto(
                 hotel.getId(),
                 hotel.getName(),
                 hotel.getDescription(),
-                (hotel.getAddress().getHouseNumber() +hotel.getAddress().getStreet()+", "
-                        +hotel.getAddress().getCity()+ ", "+ hotel.getAddress().getPostCode()+", "+ hotel.getAddress().getCountry()),
+                address,
                 hotel.getContacts().getPhone());
     }
 
@@ -115,46 +116,62 @@ public class HotelService {
                 break;
             case "amenities":
                 processAmenities(hotel.getAmenities(), histogram);
-                return; // Пропустить остальную часть метода
+                return;
             default:
-                throw new IllegalArgumentException("Invalid parameter: " + param);
+                throw new NotValidDataException(WRONG_PARAMETER);
         }
 
         updateHistogram(histogram, key);
     }
 
     private void processAmenities(List<String> amenities, Map<String, Integer> histogram) {
-        for (String amenity : amenities) {
-            updateHistogram(histogram, amenity);
-        }
+        amenities.forEach(amenity -> updateHistogram(histogram, amenity));
     }
+
     private void updateHistogram(Map<String, Integer> histogram, String key) {
         histogram.put(key, histogram.getOrDefault(key, 0) + 1);
     }
-    private boolean validationHotelDTO(HotelCreateDto hotelCreateDto) {
-        if (hotelCreateDto == null) {
-            return false; // Объект DTO не может быть null
-        }
 
-        return isNameValid(hotelCreateDto.getName()) &&
+    private void validateHotelCreation(HotelCreateDto hotelCreateDto) {
+        if (hotelsRepository.existsHotelByAddressAndName(hotelCreateDto.getAddress(), hotelCreateDto.getName())) {
+            throw new HotelAlreadyExistsException(HOTEL_EXISTS);
+        }
+        if (!validationHotelDTO(hotelCreateDto)) {
+            throw new NotValidDataException(NOT_VALID_DATA);
+        }
+    }
+
+    private Hotel mapToHotelEntity(HotelCreateDto hotelCreateDto) {
+        return Hotel.builder()
+                .name(hotelCreateDto.getName())
+                .address(hotelCreateDto.getAddress())
+                .contacts(hotelCreateDto.getContacts())
+                .arrivalTime(hotelCreateDto.getArrivalTime())
+                .brand(hotelCreateDto.getBrand())
+                .description(hotelCreateDto.getDescription())
+                .build();
+    }
+
+    private boolean validationHotelDTO(HotelCreateDto hotelCreateDto) {
+        return hotelCreateDto != null &&
+                isNameValid(hotelCreateDto.getName()) &&
                 isBrandValid(hotelCreateDto.getBrand()) &&
                 isAddressValid(hotelCreateDto.getAddress()) &&
-                isContactsValid(hotelCreateDto.getContacts())&&isArrivalTimeEmpty(hotelCreateDto.getArrivalTime());
+                isContactsValid(hotelCreateDto.getContacts()) &&
+                isArrivalTimeValid(hotelCreateDto.getArrivalTime());
     }
 
     private boolean isNameValid(String name) {
-        return name != null && !name.isEmpty();
+        return isNonEmpty(name);
     }
 
     private boolean isBrandValid(String brand) {
-        return brand != null && !brand.isEmpty();
+        return isNonEmpty(brand);
     }
 
     private boolean isAddressValid(Address address) {
-        if (address == null) {
-            return false; // Address не может быть null
-        }
-        return address.getHouseNumber() > 0 &&
+        return address != null &&
+                address.getHouseNumber() > 0 &&
                 isNonEmpty(address.getStreet()) &&
                 isNonEmpty(address.getCity()) &&
                 isNonEmpty(address.getCountry()) &&
@@ -162,17 +179,16 @@ public class HotelService {
     }
 
     private boolean isContactsValid(Contacts contacts) {
-        if (contacts == null) {
-            return false; // Contacts не может быть null
-        }
-        return isNonEmpty(contacts.getPhone()) &&
+        return contacts != null &&
+                isNonEmpty(contacts.getPhone()) &&
                 isNonEmpty(contacts.getEmail());
+    }
+
+    private boolean isArrivalTimeValid(ArrivalTime arrivalTime) {
+        return arrivalTime != null && isNonEmpty(arrivalTime.getCheckIn());
     }
 
     private boolean isNonEmpty(String str) {
         return str != null && !str.isEmpty();
-    }
-    private boolean isArrivalTimeEmpty(ArrivalTime arrivalTime){
-        return isNonEmpty(arrivalTime.getCheckIn());
     }
 }
