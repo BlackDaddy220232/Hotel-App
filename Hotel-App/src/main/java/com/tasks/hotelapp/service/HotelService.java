@@ -1,6 +1,9 @@
 package com.tasks.hotelapp.service;
 
 import com.tasks.hotelapp.dao.HotelsRepository;
+import com.tasks.hotelapp.exception.HotelAlreadyExistsException;
+import com.tasks.hotelapp.exception.HotelNotFoundException;
+import com.tasks.hotelapp.exception.NotValidDataException;
 import com.tasks.hotelapp.model.Address;
 import com.tasks.hotelapp.model.ArrivalTime;
 import com.tasks.hotelapp.model.Contacts;
@@ -22,12 +25,15 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class HotelService {
+    private static final String HOTEL_EXISTS = "Hotel with his name and address already exists";
+    private static final String NOT_VALID_DATA = "Incorrect fields!";
+    private static final String HOTEL_NOT_FOUND= "Hotel not found!";
     private HotelsRepository hotelsRepository;
     public List<HotelDto> getAllHotels() {
         return convertToHotelDto(hotelsRepository.findAll());
     }
     public Hotel getHotelById(Long id){
-        return hotelsRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Hotel with this id not found!"));
+        return hotelsRepository.findById(id).orElseThrow(()->new HotelNotFoundException(HOTEL_NOT_FOUND));
     }
     public List<HotelDto> getFilteredHotels(String name, String brand,String country, String city, List<String> amenities) {
         Specification<Hotel> spec = Specification
@@ -41,10 +47,10 @@ public class HotelService {
     }
     public HotelDto createHotel(HotelCreateDto hotelCreateDto){
         if(hotelsRepository.existsHotelByAddressAndName(hotelCreateDto.getAddress(),hotelCreateDto.getName())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Hotel with this name and address already exists");
+            throw new HotelAlreadyExistsException(HOTEL_EXISTS);
         }
         if(!validationHotelDTO(hotelCreateDto)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Fields cannot be null");
+            throw new NotValidDataException(NOT_VALID_DATA);
         }
         Hotel hotel = Hotel.builder().name(hotelCreateDto.getName())
                 .address(hotelCreateDto.getAddress())
@@ -56,7 +62,7 @@ public class HotelService {
         return convertToHotelDto(hotel);
     }
     public void addAmenities(Long id, List<String> amenities){
-        Hotel hotel = hotelsRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Hotel with this id not found!"));
+        Hotel hotel = hotelsRepository.findById(id).orElseThrow(()-> new HotelNotFoundException(HOTEL_NOT_FOUND));
         if(hotel.addToAmenities(amenities)){
             hotelsRepository.save(hotel);
         }else{
