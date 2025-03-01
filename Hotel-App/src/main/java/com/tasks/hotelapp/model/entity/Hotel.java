@@ -23,7 +23,7 @@ public class Hotel {
 
     private String name;
 
-    @Column(length = 1000)
+    @Column(length = 1000,nullable = true)
     private String description;
 
     private String brand;

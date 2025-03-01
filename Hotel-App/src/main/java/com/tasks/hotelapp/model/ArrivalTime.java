@@ -1,5 +1,6 @@
 package com.tasks.hotelapp.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +12,6 @@ import lombok.Setter;
 public class ArrivalTime {
 
     private String checkIn;
+    @Column(nullable = true)
     private String checkOut;
 }
