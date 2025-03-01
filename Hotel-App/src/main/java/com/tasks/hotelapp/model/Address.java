@@ -12,7 +12,10 @@ import lombok.Setter;
 public class Address {
     private int houseNumber;
     private String street;
+
     private String city;
+
     private String country;
+
     private String postCode;
 }

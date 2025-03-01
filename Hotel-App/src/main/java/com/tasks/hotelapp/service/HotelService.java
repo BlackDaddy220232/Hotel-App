@@ -1,6 +1,9 @@
 package com.tasks.hotelapp.service;
 
 import com.tasks.hotelapp.dao.HotelsRepository;
+import com.tasks.hotelapp.model.Address;
+import com.tasks.hotelapp.model.ArrivalTime;
+import com.tasks.hotelapp.model.Contacts;
 import com.tasks.hotelapp.model.dto.HotelCreateDto;
 import com.tasks.hotelapp.model.dto.HotelDto;
 import com.tasks.hotelapp.model.entity.Hotel;
@@ -39,6 +42,9 @@ public class HotelService {
     public HotelDto createHotel(HotelCreateDto hotelCreateDto){
         if(hotelsRepository.existsHotelByAddressAndName(hotelCreateDto.getAddress(),hotelCreateDto.getName())){
             throw new ResponseStatusException(HttpStatus.CONFLICT,"Hotel with this name and address already exists");
+        }
+        if(!validationHotelDTO(hotelCreateDto)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Fields cannot be null");
         }
         Hotel hotel = Hotel.builder().name(hotelCreateDto.getName())
                 .address(hotelCreateDto.getAddress())
@@ -119,5 +125,48 @@ public class HotelService {
     private void updateHistogram(Map<String, Integer> histogram, String key) {
         histogram.put(key, histogram.getOrDefault(key, 0) + 1);
     }
+    private boolean validationHotelDTO(HotelCreateDto hotelCreateDto) {
+        if (hotelCreateDto == null) {
+            return false; // Объект DTO не может быть null
+        }
 
+        return isNameValid(hotelCreateDto.getName()) &&
+                isBrandValid(hotelCreateDto.getBrand()) &&
+                isAddressValid(hotelCreateDto.getAddress()) &&
+                isContactsValid(hotelCreateDto.getContacts())&&isArrivalTimeEmpty(hotelCreateDto.getArrivalTime());
+    }
+
+    private boolean isNameValid(String name) {
+        return name != null && !name.isEmpty();
+    }
+
+    private boolean isBrandValid(String brand) {
+        return brand != null && !brand.isEmpty();
+    }
+
+    private boolean isAddressValid(Address address) {
+        if (address == null) {
+            return false; // Address не может быть null
+        }
+        return address.getHouseNumber() > 0 &&
+                isNonEmpty(address.getStreet()) &&
+                isNonEmpty(address.getCity()) &&
+                isNonEmpty(address.getCountry()) &&
+                isNonEmpty(address.getPostCode());
+    }
+
+    private boolean isContactsValid(Contacts contacts) {
+        if (contacts == null) {
+            return false; // Contacts не может быть null
+        }
+        return isNonEmpty(contacts.getPhone()) &&
+                isNonEmpty(contacts.getEmail());
+    }
+
+    private boolean isNonEmpty(String str) {
+        return str != null && !str.isEmpty();
+    }
+    private boolean isArrivalTimeEmpty(ArrivalTime arrivalTime){
+        return isNonEmpty(arrivalTime.getCheckIn());
+    }
 }

@@ -13,7 +13,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class HotelCreateDto {
-
     private String name;
 
     @Column(length = 1000)

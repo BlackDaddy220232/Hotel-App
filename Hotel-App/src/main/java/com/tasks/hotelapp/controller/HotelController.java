@@ -5,10 +5,8 @@ import com.tasks.hotelapp.model.dto.HotelDto;
 import com.tasks.hotelapp.model.entity.Hotel;
 import com.tasks.hotelapp.service.HotelService;
 import lombok.AllArgsConstructor;
-import org.aspectj.lang.annotation.RequiredTypes;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Map;
 
