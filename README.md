@@ -74,7 +74,7 @@ Returns a histogram with counts based on the provided parameter.
 ## Installation & Running
 
 ### Prerequisites
-- Java Development Kit (JDK) 17 or later
+- Java Development Kit (JDK) 21 or later
 - Apache Maven 3.9.6
 
 ### Clone the repository
