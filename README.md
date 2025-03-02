@@ -3,14 +3,6 @@
 ## What is it?
 Hotel-App is a RESTful web service built using the Spring Framework. It provides an interface for managing hotel properties, searching for hotels, and filtering them by various parameters.
 
-## Sonar Cloud
-
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=BlackDaddy220232_Hotel-App&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=BlackDaddy220232_Hotel-App)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=BlackDaddy220232_Hotel-App&metric=bugs)](https://sonarcloud.io/summary/new_code?id=BlackDaddy220232_Hotel-App)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=BlackDaddy220232_Hotel-App&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=BlackDaddy220232_Hotel-App)
-
-This project is integrated with the Sonor Cloud platform, which provides advanced code analysis and quality assurance tools to help us deliver high-quality, maintainable code.
-
 ## API Reference
 
 ### Get all hotels
