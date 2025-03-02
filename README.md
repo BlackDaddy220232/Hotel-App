@@ -84,7 +84,7 @@ git clone https://github.com/BlackDaddy220232/Hotel-App.git
 
 ### Navigate into the directory
 ```bash
-cd Hotel-App
+cd Hotel-App/Hotel-App
 ```
 
 ### Run the application
