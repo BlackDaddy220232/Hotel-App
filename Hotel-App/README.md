@@ -132,7 +132,7 @@ spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
 ### Tests
 The service layer of the "Hotel-App" application has **100% unit test coverage**. This means that every method and code path in the service layer is thoroughly tested, ensuring the correctness of the application's core functionality.
 
-![Test Coverage](testCoverage.png)
+![Test Coverage](../testCoverage.png)
 ## Technologies Used
 - **Spring Boot**
 - **Spring Web**
